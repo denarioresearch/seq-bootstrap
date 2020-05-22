@@ -49,7 +49,7 @@ def seqBootstrap(indM, sLength=None):
     phi=[]
     
     while len(phi)<sLength:
-        print(len(phi))
+        print(len(phi),'of',sLength)
         avgU = pd.Series()
         for i in indM:
             indM_ = indM[phi+[i]]
