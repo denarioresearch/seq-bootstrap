@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import datetime
 
-trades_df=pd.read_csv('hist_2015_11_11-2020_5_20_noML.csv')
+trades_df=pd.read_csv('XBTUSD_hist_2015_11_11_2020_5_20_noML_preproc.csv')
 trades_df['Opened'] = pd.to_datetime(trades_df['Opened'],  unit='ns')
 trades_df['Closed'] = pd.to_datetime(trades_df['Closed'],  unit='ns')
 
