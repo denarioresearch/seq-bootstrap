@@ -2,42 +2,22 @@ import pandas as pd
 import numpy as np
 import datetime
 
-trades_df=pd.read_csv('XBTUSD_hist_2015_11_11_2020_5_20_noML_preproc.csv')
-trades_df['Opened'] = pd.to_datetime(trades_df['Opened'],  unit='ns')
-trades_df['Closed'] = pd.to_datetime(trades_df['Closed'],  unit='ns')
+signals = pd.read_csv('XBTUSD_hist_2015_11_11_2020_5_20_noML_preproc.csv')
+signals['Date'] = pd.to_datetime(signals['Unnamed: 0'],  unit='ns')
+signals.drop(['Unnamed: 0'], inplace=True, axis=1)
 
 
-total_trades=trades_df.shape[0]
-won_trades= trades_df[trades_df['Profit']>0].shape[0]
-ratio =won_trades/total_trades
-target_ratio=0.4
-need = round((target_ratio-ratio)*total_trades)
-won_idx=trades_df[trades_df['Profit']>0].index
-random_idx=np.random.choice(won_idx, size=need)
-won_df = trades_df.iloc[random_idx]
-trades_df = pd.concat([trades_df,won_df])
-trades_df = trades_df.sample(frac=1).reset_index(drop=True)
 
-won_trades= trades_df[trades_df['Profit']>0].shape[0]
-won_idx=trades_df[trades_df['Profit']>0].index
-loss_idx = trades_df[trades_df['Profit']<0].index
-new_loss_idx=np.random.choice(loss_idx, size=won_trades)
-new_idx= np.concatenate([won_idx,new_loss_idx])
-np.random.shuffle(new_idx)
-trades_df=trades_df.iloc[new_idx]
 
-trades_df.sort_values(by=['Opened'], inplace=True)
-trades_df.reset_index(inplace=True,drop=True)
-
-t1 = pd.Series(trades_df['Opened'].values, index=trades_df['Opened'].values - pd.Timedelta('14 days'),name='t1')
-
+t1 = pd.Series(signals['Date'].values, index=signals['Date'].values - pd.Timedelta('14 days'),name='t1')
+t1.to_csv('XBTUSD_t1')
 def getIndMatrix(barIx,t1):
     indM = pd.DataFrame(0, index=barIx, columns=range(t1.shape[0]))
     for i, (t0,t1) in enumerate(t1.iteritems()):
         indM.loc[t0:t1,i]=1
     return indM
-indM= getIndMatrix(trades_df['Opened'],t1)
-
+indM= getIndMatrix(signals['Date'],t1)
+indM.to_csv('XBTUSD_indM')
 def getAvgUniquness(indM):
     c = indM.sum(axis=1)
     u = indM.div(c,axis=0)
@@ -59,6 +39,6 @@ def seqBootstrap(indM, sLength=None):
         
     return phi
 phi = seqBootstrap(indM)
-trades_df=trades_df.iloc[phi]
-trades_df.reset_index(drop=True,inplace=True)
-trades_df.to_csv('hist_2015_11_11-2020_5_20_noML_bootstrap.csv')
+signals=signals.iloc[phi]
+signals.reset_index(drop=True,inplace=True)
+signals.to_csv('XBTUSD_hist_2015_11_11_2020_5_20_noML_bootstrap.csv')
